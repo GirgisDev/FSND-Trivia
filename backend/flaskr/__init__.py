@@ -146,6 +146,25 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route("/questions/search", methods=["POST"])
+  def search_questions():
+    search_term = request.get_json().get("search_term", "")
+
+    try:
+      questions = Question.query.filter(Question.question.ilike('%' + search_term + '%')).all()
+      current_questions = paginate_questions(request, questions)
+
+      if len(current_questions) == 0:
+        abort(404)
+
+      return jsonify({
+        'success': True,
+        'questions': current_questions,
+        'current_category': None,
+        'total_questions': len(Question.query.all())
+      })
+    except:
+      abort(422)
 
   '''
   @TODO: 
@@ -157,8 +176,10 @@ def create_app(test_config=None):
   '''
   @app.route("/categories/<int:category_id>/questions")
   def get_questions_by_category(category_id):
-    questions = Question.query.filter(Question.category == category_id).all()
+    questions = Question.query.filter(Question.category == str(category_id)).all()
     categories = Category.query.order_by(Category.id).all()
+    current_category = Category.query.get(category_id)
+    current_category = current_category.format()
     formatted_categories = [category.format() for category in categories]
     current_questions = paginate_questions(request, questions)
 
@@ -169,7 +190,7 @@ def create_app(test_config=None):
       'success': True,
       'questions': current_questions,
       'categories': formatted_categories,
-      'current_category': 'a',
+      'current_category': current_category,
       'total_questions': len(Question.query.all())
     })
 
