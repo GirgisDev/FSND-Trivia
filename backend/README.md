@@ -66,27 +66,127 @@ One note before you delve into your tasks: for each endpoint you are expected to
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
-REVIEW_COMMENT
+## API Reference
+
+### Error Handling
+Errors are returned as JSON objects in the following format:
 ```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
+{
+    "success": False, 
+    "error": 400,
+    "message": "bad request"
+}
+```
 
-Endpoints
-GET '/categories'
-GET ...
-POST ...
-DELETE ...
+The API will return three error types when requests fail:
+- 400: Bad Request
+- 404: Resource Not Found
+- 405: Method not allowed
+- 422: Not Processable 
 
-GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
 
+### Endpoints 
+#### GET /questions
+- General:
+    - Returns a list of question objects, success value, and total number of questions
+    - Results are paginated in groups of 10. Include a request argument to choose page number, starting from 1. 
+- Sample: `curl http://127.0.0.1:5000/questions`
+
+``` 
+{
+  "questions": [
+    {
+      "question": "What boxer's original name is Cassius Clay?",
+      "answer": "Muhammad Ali",
+      "id": 1,
+      "category": "6",
+      "difficulty": 1
+    }
+  ],
+  categories: [{...}]
+  "success": true,
+  "total_questions": 19
+}
+```
+
+#### GET /categories
+- General:
+    - Returns a list of categories objects and success value
+- Sample: `curl http://127.0.0.1:5000/categories`
+
+``` 
+{
+  categories: [
+    { id: 1, type: "Entertainment" },
+    { id: 2, type: "Sports" }
+  ]
+  "success": true,
+}
+```
+
+#### DELETE /questions/<int:question_id>
+- General:
+    - Deletes questions with the specified ID
+- Sample: `curl -X DELETE http://127.0.0.1:5000/questions/2`
+
+``` 
+{
+  "success": true,
+  "deleted": 2
+}
+```
+
+#### POST /questions
+- General:
+    - Adds new question
+- Sample: `curl -X POST -d '{"question": "...", "answer": "...", "category": `int`, "difficulty": `int`}' http://127.0.0.1:5000/questions`
+
+``` 
+{
+  "success": true,
+  "created": 9
+}
+```
+
+#### POST /questions/search
+- General:
+    - Searches for any questions that includes the search term
+- Sample: `curl -X POST -d '{"search_term": "..."}' http://127.0.0.1:5000/questions/search`
+
+``` 
+{
+  "success": true,
+  "questions": [{...}],
+  "current_category": null,
+  "total_questions": 9
+}
+```
+
+#### GET /categories/<int:category_id>/questions
+- General:
+    - Gets questions of a specific category
+- Sample: `curl http://127.0.0.1:5000/categories/4/questions`
+
+``` 
+{
+  "success": true,
+  "questions": [{...}],
+  "categories": [{...}],
+  "current_category": {...},
+  "total_questions": 9
+}
+```
+
+#### POST /quizzes
+- General:
+    - Play Quiz on specifi category of questions
+- Sample: `curl -X POST -d '{"previous_questions": ..., "quiz_category": 1}' http://127.0.0.1:5000/quizzes`
+
+``` 
+{
+  "success": true,
+  "question": {...}
+}
 ```
 
 
