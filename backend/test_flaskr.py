@@ -89,13 +89,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["deleted"], last_question.get('id'))
         self.assertEqual(question, None)
 
-    def test_404_if_question_does_not_exist(self):
-        res = self.client().delete("/questions/1000")
+    def test_fail_to_delete_question(self):
+        res = self.client().delete(f"/questions/1000")
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "unprocessable")
+        self.assertEqual(data["message"], "resource not found")
 
     def test_get_question_of_certain_category(self):
         res = self.client().get("/categories/6/questions")
@@ -105,6 +105,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["success"], True)
         self.assertEqual(data["current_category"].get("type"), "Sports")
 
+    def test_fail_to_find_question_of_certain_category(self):
+        res = self.client().get("/categories/1000/questions")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "resource not found")
+
     def test_searching_for_question(self):
         res = self.client().post("/questions/search", json={ "search_term": "clay" })
         data = json.loads(res.data)
@@ -112,6 +120,22 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertEqual(len(data["questions"]), 1)
+
+    def test_not_finding_searched_for_questions(self):
+        res = self.client().post("/questions/search", json={ "search_term": "longUnknownSearchTerm" })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "resource not found")
+
+    def test_get_on_invalid_endpoint(self):
+        res = self.client().get("/question")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "resource not found")
 
 
 
